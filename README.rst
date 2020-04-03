@@ -1,9 +1,5 @@
-Google Speech Recognition
-=========================
-
-.. image:: https://img.shields.io/pypi/dm/SpeechRecognition.svg
-    :target: https://pypi.python.org/pypi/SpeechRecognition/
-    :alt: Downloads
+SpeechRecognition
+=================
 
 .. image:: https://img.shields.io/pypi/v/SpeechRecognition.svg
     :target: https://pypi.python.org/pypi/SpeechRecognition/
@@ -21,115 +17,58 @@ Google Speech Recognition
     :target: https://pypi.python.org/pypi/SpeechRecognition/
     :alt: License
 
-Library for performing speech recognition with the Google Speech Recognition API.
+.. image:: https://api.travis-ci.org/Uberi/speech_recognition.svg?branch=master
+    :target: https://travis-ci.org/Uberi/speech_recognition
+    :alt: Continuous Integration Test Results
 
-Links:
+Library for performing speech recognition, with support for several engines and APIs, online and offline.
 
--  `PyPI <https://pypi.python.org/pypi/SpeechRecognition/>`__
--  `GitHub <https://github.com/Uberi/speech_recognition>`__
+Speech recognition engine/API support:
 
-Quickstart: ``pip install SpeechRecognition``. See the "Installing" section for more details.
+* `CMU Sphinx <http://cmusphinx.sourceforge.net/wiki/>`__ (works offline)
+* Google Speech Recognition
+* `Google Cloud Speech API <https://cloud.google.com/speech/>`__
+* `Wit.ai <https://wit.ai/>`__
+* `Microsoft Azure Speech <https://azure.microsoft.com/en-us/services/cognitive-services/speech/>`__
+* `Microsoft Bing Voice Recognition (Deprecated) <https://www.microsoft.com/cognitive-services/en-us/speech-api>`__
+* `Houndify API <https://houndify.com/>`__
+* `IBM Speech to Text <http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html>`__
+* `Snowboy Hotword Detection <https://snowboy.kitt.ai/>`__ (works offline)
+
+**Quickstart:** ``pip install SpeechRecognition``. See the "Installing" section for more details.
 
 To quickly try it out, run ``python -m speech_recognition`` after installing.
 
-How to cite this library (APA style):
+Project links:
 
-    Zhang, A. (2015). Speech Recognition (Version 2.1) [Software]. Available from https://github.com/Uberi/speech_recognition#readme.
+-  `PyPI <https://pypi.python.org/pypi/SpeechRecognition/>`__
+-  `Source code <https://github.com/Uberi/speech_recognition>`__
+-  `Issue tracker <https://github.com/Uberi/speech_recognition/issues>`__
 
-How to cite this library (Chicago style):
+Library Reference
+-----------------
 
-    Zhang, Anthony. 2015. *Speech Recognition* (version 2.1).
+The `library reference <https://github.com/Uberi/speech_recognition/blob/master/reference/library-reference.rst>`__ documents every publicly accessible object in the library. This document is also included under ``reference/library-reference.rst``.
 
-Also check out the [Python Baidu Yuyin API](https://github.com/DelightRun/PyBaiduYuyin), which is based on this project.
+See `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for information about installing languages, compiling PocketSphinx, and building language packs from online resources. This document is also included under ``reference/pocketsphinx.rst``.
 
 Examples
 --------
 
-Recognize speech input from the microphone:
+See the ``examples/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/examples>`__ in the repository root for usage examples:
 
-.. code:: python
-
-                                                   # NOTE: this requires PyAudio because it uses the Microphone class
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    with sr.Microphone() as source:                # use the default microphone as the audio source
-        audio = r.listen(source)                   # listen for the first phrase and extract it into audio data
-
-    try:
-        print("You said " + r.recognize(audio))    # recognize speech using Google Speech Recognition
-    except LookupError:                            # speech is unintelligible
-        print("Could not understand audio")
-
-Transcribe a WAV audio file:
-
-.. code:: python
-
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    with sr.WavFile("test.wav") as source:              # use "test.wav" as the audio source
-        audio = r.record(source)                        # extract audio data from the file
-
-    try:
-        print("Transcription: " + r.recognize(audio))   # recognize speech using Google Speech Recognition
-    except LookupError:                                 # speech is unintelligible
-        print("Could not understand audio")
-
-Transcribe a WAV audio file and show the confidence of each possibility:
-
-.. code:: python
-
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    with sr.WavFile("test.wav") as source:              # use "test.wav" as the audio source
-        audio = r.record(source)                        # extract audio data from the file
-
-    try:
-        list = r.recognize(audio,True)                  # generate a list of possible transcriptions
-        print("Possible transcriptions:")
-        for prediction in list:
-            print(" " + prediction["text"] + " (" + str(prediction["confidence"]*100) + "%)")
-    except LookupError:                                 # speech is unintelligible
-        print("Could not understand audio")
-
-Calibrate the recognizer energy threshold (see ``recognizer_instance.energy_threshold``) for ambient noise levels:
-
-.. code:: python
-
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    with sr.Microphone() as source:                # use the default microphone as the audio source
-        r.adjust_for_ambient_noise(source)         # listen for 1 second to calibrate the energy threshold for ambient noise levels
-        audio = r.listen(source)                   # now when we listen, the energy threshold is already set to a good value, and we can reliably catch speech right away
-
-    try:
-        print("You said " + r.recognize(audio))    # recognize speech using Google Speech Recognition
-    except LookupError:                            # speech is unintelligible
-        print("Could not understand audio")
-
-Listening to a microphone in the background:
-
-.. code:: python
-
-    import speech_recognition as sr
-    def callback(recognizer, audio):                          # this is called from the background thread
-        try:
-            print("You said " + recognizer.recognize(audio))  # received audio data, now need to recognize it
-        except LookupError:
-            print("Oops! Didn't catch that")
-    r = sr.Recognizer()
-    m = sr.Microphone()
-    with m as source: r.adjust_for_ambient_noise(source)      # we only need to calibrate once, before we start listening
-    stop_listening = r.listen_in_background(m, callback)
-    
-    import time
-    for _ in range(50): time.sleep(0.1)                       # we're still listening even though the main thread is blocked - loop runs for about 5 seconds
-    stop_listening()                                          # call the stop function to stop the background thread
-    while True: time.sleep(0.1)                               # the background thread stops soon after we call the stop function
+-  `Recognize speech input from the microphone <https://github.com/Uberi/speech_recognition/blob/master/examples/microphone_recognition.py>`__
+-  `Transcribe an audio file <https://github.com/Uberi/speech_recognition/blob/master/examples/audio_transcribe.py>`__
+-  `Save audio data to an audio file <https://github.com/Uberi/speech_recognition/blob/master/examples/write_audio.py>`__
+-  `Show extended recognition results <https://github.com/Uberi/speech_recognition/blob/master/examples/extended_results.py>`__
+-  `Calibrate the recognizer energy threshold for ambient noise levels <https://github.com/Uberi/speech_recognition/blob/master/examples/calibrate_energy_threshold.py>`__ (see ``recognizer_instance.energy_threshold`` for details)
+-  `Listening to a microphone in the background <https://github.com/Uberi/speech_recognition/blob/master/examples/background_listening.py>`__
+-  `Various other useful recognizer features <https://github.com/Uberi/speech_recognition/blob/master/examples/special_recognizer_features.py>`__
 
 Installing
 ----------
 
-First, make sure you have all the requirements, listed in the "Requirements" section.
+First, make sure you have all the requirements listed in the "Requirements" section. 
 
 The easiest way to install this is using ``pip install SpeechRecognition``.
 
@@ -140,12 +79,20 @@ In the folder, run ``python setup.py install``.
 Requirements
 ------------
 
-API Key
-~~~~~~~
+To use all of the functionality of the library, you should have:
 
-Google Speech Recognition API requires an API key. This library defaults to using one that was reverse engineered out of Chrome, but **it is not recommended that you use this API key for anything other than personal or testing purposes**.
+* **Python** 2.6, 2.7, or 3.3+ (required)
+* **PyAudio** 0.2.11+ (required only if you need to use microphone input, ``Microphone``)
+* **PocketSphinx** (required only if you need to use the Sphinx recognizer, ``recognizer_instance.recognize_sphinx``)
+* **Google API Client Library for Python** (required only if you need to use the Google Cloud Speech API, ``recognizer_instance.recognize_google_cloud``)
+* **FLAC encoder** (required only if the system is not x86-based Windows/Linux/OS X)
 
-Instead, it is best to obtain your own API key by following the steps on the `API Keys <http://www.chromium.org/developers/how-tos/api-keys>`__ page at the Chromium Developers site.
+The following requirements are optional, but can improve or extend functionality in some situations:
+
+* On Python 2, and only on Python 2, some functions (like ``recognizer_instance.recognize_bing``) will run slower if you do not have **Monotonic for Python 2** installed.
+* If using CMU Sphinx, you may want to `install additional language packs <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst#installing-other-languages>`__ to support languages like International French or Mandarin Chinese.
+
+The following sections go over the details of each requirement.
 
 Python
 ~~~~~~
@@ -155,110 +102,149 @@ The first software requirement is `Python 2.6, 2.7, or Python 3.3+ <https://www.
 PyAudio (for microphone users)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you want to use audio input from microphones, `PyAudio <http://people.csail.mit.edu/hubert/pyaudio/#downloads>`__ is also necessary. If not installed, the library will still work, but ``Microphone`` will be undefined.
+`PyAudio <http://people.csail.mit.edu/hubert/pyaudio/#downloads>`__ is required if and only if you want to use microphone input (``Microphone``). PyAudio version 0.2.11+ is required, as earlier versions have known memory management bugs when recording from microphones in certain situations.
 
-The official PyAudio builds seem to be broken on Windows. As a result, in the ``installers`` folder you will find `unofficial PyAudio builds for Windows <http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio>`__ that actually work. Run the installer corresponding to your Python version to install PyAudio.
+If not installed, everything in the library will still work, except attempting to instantiate a ``Microphone`` object will raise an ``AttributeError``.
 
-On Debain-based distributions such as Ubuntu, you can generally install PyAudio by running ``sudo apt-get install python-pyaudio python3-pyaudio``, which will install it for both Python 2 and Python 3.
+The installation instructions on the PyAudio website are quite good - for convenience, they are summarized below:
 
-On other POSIX-based systems, simply use the packages provided on the downloads page linked above, or compile and install it from source.
+* On Windows, install PyAudio using `Pip <https://pip.readthedocs.org/>`__: execute ``pip install pyaudio`` in a terminal.
+* On Debian-derived Linux distributions (like Ubuntu and Mint), install PyAudio using `APT <https://wiki.debian.org/Apt>`__: execute ``sudo apt-get install python-pyaudio python3-pyaudio`` in a terminal.
+    * If the version in the repositories is too old, install the latest release using Pip: execute ``sudo apt-get install portaudio19-dev python-all-dev python3-all-dev && sudo pip install pyaudio`` (replace ``pip`` with ``pip3`` if using Python 3).
+* On OS X, install PortAudio using `Homebrew <http://brew.sh/>`__: ``brew install portaudio``. Then, install PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install pyaudio``.
+* On other POSIX-based systems, install the ``portaudio19-dev`` and ``python-all-dev`` (or ``python3-all-dev`` if using Python 3) packages (or their closest equivalents) using a package manager of your choice, and then install PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install pyaudio`` (replace ``pip`` with ``pip3`` if using Python 3).
+
+PyAudio `wheel packages <https://pypi.python.org/pypi/wheel>`__ for common 64-bit Python versions on Windows and Linux are included for convenience, under the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__ in the repository root. To install, simply run ``pip install wheel`` followed by ``pip install ./third-party/WHEEL_FILENAME`` (replace ``pip`` with ``pip3`` if using Python 3) in the repository `root directory <https://github.com/Uberi/speech_recognition>`__.
+
+PocketSphinx-Python (for Sphinx users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`PocketSphinx-Python <https://github.com/bambocher/pocketsphinx-python>`__ is **required if and only if you want to use the Sphinx recognizer** (``recognizer_instance.recognize_sphinx``).
+
+PocketSphinx-Python `wheel packages <https://pypi.python.org/pypi/wheel>`__ for 64-bit Python 2.7, 3.4, and 3.5 on Windows are included for convenience, under the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__. To install, simply run ``pip install wheel`` followed by ``pip install ./third-party/WHEEL_FILENAME`` (replace ``pip`` with ``pip3`` if using Python 3) in the SpeechRecognition folder.
+
+On Linux and other POSIX systems (such as OS X), follow the instructions under "Building PocketSphinx-Python from source" in `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for installation instructions.
+
+Note that the versions available in most package repositories are outdated and will not work with the bundled language data. Using the bundled wheel packages or building from source is recommended.
+
+See `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for information about installing languages, compiling PocketSphinx, and building language packs from online resources. This document is also included under ``reference/pocketsphinx.rst``.
+
+Google Cloud Speech Library for Python (for Google Cloud Speech API users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Google Cloud Speech library for Python <https://cloud.google.com/speech-to-text/docs/quickstart>`__ is required if and only if you want to use the Google Cloud Speech API (``recognizer_instance.recognize_google_cloud``).
+
+If not installed, everything in the library will still work, except calling ``recognizer_instance.recognize_google_cloud`` will raise an ``RequestError``.
+
+According to the `official installation instructions <https://cloud.google.com/speech-to-text/docs/quickstart>`__, the recommended way to install this is using `Pip <https://pip.readthedocs.org/>`__: execute ``pip install google-cloud-speech`` (replace ``pip`` with ``pip3`` if using Python 3).
 
 FLAC (for some systems)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-A FLAC encoder is required to encode the audio data to send to the API. If using Windows, OS X, or Linux on an i385-compatible architecture, the encoder is already bundled with this library.
+A `FLAC encoder <https://xiph.org/flac/>`__ is required to encode the audio data to send to the API. If using Windows (x86 or x86-64), OS X (Intel Macs only, OS X 10.6 or higher), or Linux (x86 or x86-64), this is **already bundled with this library - you do not need to install anything**.
 
-Otherwise, ensure that you have the ``flac`` command line tool, which is often available through the system package manager.
+Otherwise, ensure that you have the ``flac`` command line tool, which is often available through the system package manager. For example, this would usually be ``sudo apt-get install flac`` on Debian-derivatives, or ``brew install flac`` on OS X with Homebrew.
 
-In summary, this library requires:
+Monotonic for Python 2 (for faster operations in some functions on Python 2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Python 2.6, 2.7, or 3.3+
-* PyAudio (required only if you need to use microphone input)
-* FLAC encoder (required only if the system is not x86-based Windows/Linux/OS X)
+On Python 2, and only on Python 2, if you do not install the `Monotonic for Python 2 <https://github.com/atdt/monotonic>`__ library, some functions will run slower than they otherwise could (though everything will still work correctly).
+
+On Python 3, that library's functionality is built into the Python standard library, which makes it unnecessary.
+
+This is because monotonic time is necessary to handle cache expiry properly in the face of system time changes and other time-related issues. If monotonic time functionality is not available, then things like access token requests will not be cached.
+
+To install, use `Pip <https://pip.readthedocs.org/>`__: execute ``pip install monotonic`` in a terminal.
 
 Troubleshooting
 ---------------
 
-The ``Microphone`` class is missing/not defined!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This class is not defined when PyAudio is not available.
-
-Make sure you have PyAudio installed, and make sure you can import it correctly. Test this out by opening a Python console (make sure to use the same version you're running your program with!) and typing in ``import pyaudio``. If you get an error, PyAudio is not installed or not configured correctly.
-
-See the "Requirements" section for more information about installing PyAudio.
-
-The recognizer tries to recognize speech even when I'm not speaking.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The recognizer tries to recognize speech even when I'm not speaking, or after I'm done speaking.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Try increasing the ``recognizer_instance.energy_threshold`` property. This is basically how sensitive the recognizer is to when recognition should start. Higher values mean that it will be less sensitive, which is useful if you are in a loud room.
 
 This value depends entirely on your microphone or audio data. There is no one-size-fits-all value, but good values typically range from 50 to 4000.
+
+Also, check on your microphone volume settings. If it is too sensitive, the microphone may be picking up a lot of ambient noise. If it is too insensitive, the microphone may be rejecting speech as just noise.
 
 The recognizer can't recognize speech right after it starts listening for the first time.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``recognizer_instance.energy_threshold`` property is probably set to a value that is too high to start off with, and then being adjusted lower automatically by dynamic energy threshold adjustment. Before it is at a good level, the energy threshold is so high that speech is just considered ambient noise.
 
-The solution is to decrease this threshold, or call ``recognizer_instance.adjust_for_ambient_noise(source, duration = 1)`` beforehand, which will set the threshold to a good value automatically.
+The solution is to decrease this threshold, or call ``recognizer_instance.adjust_for_ambient_noise`` beforehand, which will set the threshold to a good value automatically.
 
 The recognizer doesn't understand my particular language/dialect.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Try setting the language code when creating a ``Recognizer`` instance. For example, for British English it is better to use ``Recognizer("en-GB")`` rather than the default US English.
+Try setting the recognition language to your language/dialect. To do this, see the documentation for ``recognizer_instance.recognize_sphinx``, ``recognizer_instance.recognize_google``, ``recognizer_instance.recognize_wit``, ``recognizer_instance.recognize_bing``, ``recognizer_instance.recognize_api``, ``recognizer_instance.recognize_houndify``, and ``recognizer_instance.recognize_ibm``.
 
-See the "Reference" section for more information about language codes.
+For example, if your language/dialect is British English, it is better to use ``"en-GB"`` as the language rather than ``"en-US"``.
 
-The code examples throw ``UnicodeEncodeError: 'ascii' codec can't encode character`` when run.
+The recognizer hangs on ``recognizer_instance.listen``; specifically, when it's calling ``Microphone.MicrophoneStream.read``.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This usually happens when you're using a Raspberry Pi board, which doesn't have audio input capabilities by itself. This causes the default microphone used by PyAudio to simply block when we try to read it. If you happen to be using a Raspberry Pi, you'll need a USB sound card (or USB microphone).
+
+Once you do this, change all instances of ``Microphone()`` to ``Microphone(device_index=MICROPHONE_INDEX)``, where ``MICROPHONE_INDEX`` is the hardware-specific index of the microphone.
+
+To figure out what the value of ``MICROPHONE_INDEX`` should be, run the following code:
+
+.. code:: python
+
+    import speech_recognition as sr
+    for index, name in enumerate(sr.Microphone.list_microphone_names()):
+        print("Microphone with name \"{1}\" found for `Microphone(device_index={0})`".format(index, name))
+
+This will print out something like the following:
+
+::
+
+    Microphone with name "HDA Intel HDMI: 0 (hw:0,3)" found for `Microphone(device_index=0)`
+    Microphone with name "HDA Intel HDMI: 1 (hw:0,7)" found for `Microphone(device_index=1)`
+    Microphone with name "HDA Intel HDMI: 2 (hw:0,8)" found for `Microphone(device_index=2)`
+    Microphone with name "Blue Snowball: USB Audio (hw:1,0)" found for `Microphone(device_index=3)`
+    Microphone with name "hdmi" found for `Microphone(device_index=4)`
+    Microphone with name "pulse" found for `Microphone(device_index=5)`
+    Microphone with name "default" found for `Microphone(device_index=6)`
+
+Now, to use the Snowball microphone, you would change ``Microphone()`` to ``Microphone(device_index=3)``.
+
+Calling ``Microphone()`` gives the error ``IOError: No Default Input Device Available``.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As the error says, the program doesn't know which microphone to use.
+
+To proceed, either use ``Microphone(device_index=MICROPHONE_INDEX, ...)`` instead of ``Microphone(...)``, or set a default microphone in your OS. You can obtain possible values of ``MICROPHONE_INDEX`` using the code in the troubleshooting entry right above this one.
+
+The code examples raise ``UnicodeEncodeError: 'ascii' codec can't encode character`` when run.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you're using Python 2, and your language uses non-ASCII characters, and the terminal or file-like object you're printing to only supports ASCII, an error is thrown when trying to write non-ASCII characters. In Python 3, the language will transparently handle all Unicode output properly.
+When you're using Python 2, and your language uses non-ASCII characters, and the terminal or file-like object you're printing to only supports ASCII, an error is raised when trying to write non-ASCII characters.
 
-This is because in Python 2, ``recognizer_instance.recognize(audio_data, show_all = False)`` returns a unicode string (``u"something"``) rather than a byte string (``"something"``). In Python 3, all strings are unicode strings.
+This is because in Python 2, ``recognizer_instance.recognize_sphinx``, ``recognizer_instance.recognize_google``, ``recognizer_instance.recognize_wit``, ``recognizer_instance.recognize_bing``, ``recognizer_instance.recognize_api``, ``recognizer_instance.recognize_houndify``, and ``recognizer_instance.recognize_ibm`` return unicode strings (``u"something"``) rather than byte strings (``"something"``). In Python 3, all strings are unicode strings.
 
 To make printing of unicode strings work in Python 2 as well, replace all print statements in your code of the following form:
 
     .. code:: python
 
-        print(SOME_UNICODE_STRING)
+        print SOME_UNICODE_STRING
 
 With the following:
 
     .. code:: python
 
-        print(SOME_UNICODE_STRING.encode("utf8"))
+        print SOME_UNICODE_STRING.encode("utf8")
 
-This change, however, will break the code in Python 3.
+This change, however, will prevent the code from working in Python 3.
 
 The program doesn't run when compiled with `PyInstaller <https://github.com/pyinstaller/pyinstaller/wiki>`__.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PyInstaller doesn't know that the FLAC converters need to be bundled with the application. To resolve this, we need to make a PyInstaller hook to include those files and tell PyInstaller where that hook is:
+As of PyInstaller version 3.0, SpeechRecognition is supported out of the box. If you're getting weird issues when compiling your program using PyInstaller, simply update PyInstaller.
 
-1. Create a folder in your project directory to store PyInstaller hooks, if the project doesn't already have one. For example, a folder ``pyinstaller-hooks`` in the project root directory.
-2. Create a file called ``hook-speech_recognition.py`` in that folder, with the following contents:
-
-    .. code:: python
-
-        from PyInstaller.hooks.hookutils import collect_data_files
-        datas = collect_data_files("speech_recognition")
-
-3. When building the project using something like ``pyinstaller SOME_SCRIPT.py``, simply supply the ``--additional-hooks-dir`` option set to the PyInstaller hooks folder. For example, ``pyinstaller --additional-hooks-dir pyinstaller-hooks/ SOME_SCRIPT.py``.
-
-On Ubuntu/Debian, I get errors like "jack server is not running or cannot be started" or "Cannot lock down [...] byte memory area (Cannot allocate memory)".
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Linux audio stack is pretty fickle. There are a few things that can cause these issues.
-
-First, make sure JACK is installed - to install it, run `sudo apt-get install multimedia-jack`
-
-You will then want to configure the JACK daemon correctly to avoid that "Cannot allocate memory" error. Run ``sudo dpkg-reconfigure -p high jackd2`` and select "Yes" to do so.
-
-Now, you will want to make sure your current user is in the ``audio`` group. You can add your current user to this group by running ``sudo adduser $(whoami) audio``.
-
-Unfortunately, these changes will require you to reboot before they take effect.
-
-After rebooting, run ``pulseaudio --kill``, followed by ``jack_control start``, to fix the "jack server is not running or cannot be started" error.
+You can easily do this by running ``pip install --upgrade pyinstaller``.
 
 On Ubuntu/Debian, I get annoying output in the terminal saying things like "bt_audio_service_open: [...] Connection refused" and various others.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -267,210 +253,129 @@ The "bt_audio_service_open" error means that you have a Bluetooth audio device, 
 
 For errors of the form "ALSA lib [...] Unknown PCM", see `this StackOverflow answer <http://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time>`__. Basically, to get rid of an error of the form "Unknown PCM cards.pcm.rear", simply comment out ``pcm.rear cards.pcm.rear`` in ``/usr/share/alsa/alsa.conf``, ``~/.asoundrc``, and ``/etc/asound.conf``.
 
-Reference
----------
+For "jack server is not running or cannot be started" or "connect(2) call to /dev/shm/jack-1000/default/jack_0 failed (err=No such file or directory)" or "attempt to connect to server failed", these are caused by ALSA trying to connect to JACK, and can be safely ignored. I'm not aware of any simple way to turn those messages off at this time, besides `entirely disabling printing while starting the microphone <https://github.com/Uberi/speech_recognition/issues/182#issuecomment-266256337>`__.
 
-``Microphone(device_index = None)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On OS X, I get a ``ChildProcessError`` saying that it couldn't find the system FLAC converter, even though it's installed.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is available if PyAudio is available, and is undefined otherwise.
+Installing `FLAC for OS X <https://xiph.org/flac/download.html>`__ directly from the source code will not work, since it doesn't correctly add the executables to the search path.
 
-Creates a new ``Microphone`` instance, which represents a physical microphone on the computer. Subclass of ``AudioSource``.
+Installing FLAC using `Homebrew <http://brew.sh/>`__ ensures that the search path is correctly updated. First, ensure you have Homebrew, then run ``brew install flac`` to install the necessary files.
 
-If ``device_index`` is unspecified or ``None``, the default microphone is used as the audio source. Otherwise, ``device_index`` should be the index of the device to use for audio input.
+Developing
+----------
 
-A device index is an integer between 0 and ``pyaudio.get_device_count() - 1`` (assume we have used ``import pyaudio`` beforehand) inclusive. It represents an audio device such as a microphone or speaker. See the `PyAudio documentation <http://people.csail.mit.edu/hubert/pyaudio/docs/>`__ for more details.
+To hack on this library, first make sure you have all the requirements listed in the "Requirements" section.
 
-This class is to be used with ``with`` statements:
+-  Most of the library code lives in ``speech_recognition/__init__.py``.
+-  Examples live under the ``examples/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/examples>`__, and the demo script lives in ``speech_recognition/__main__.py``.
+-  The FLAC encoder binaries are in the ``speech_recognition/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/speech_recognition>`__.
+-  Documentation can be found in the ``reference/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/reference>`__.
+-  Third-party libraries, utilities, and reference material are in the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__.
 
-.. code:: python
+To install/reinstall the library locally, run ``python setup.py install`` in the project `root directory <https://github.com/Uberi/speech_recognition>`__.
 
-    with Microphone() as source:    # open the microphone and start recording
-        pass                        # do things here - `source` is the Microphone instance created above
-                                    # the microphone is automatically released at this point
+Before a release, the version number is bumped in ``README.rst`` and ``speech_recognition/__init__.py``. Version tags are then created using ``git config gpg.program gpg2 && git config user.signingkey DB45F6C431DE7C2DCD99FF7904882258A4063489 && git tag -s VERSION_GOES_HERE -m "Version VERSION_GOES_HERE"``.
 
-``WavFile(filename_or_fileobject)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Releases are done by running ``make-release.sh VERSION_GOES_HERE`` to build the Python source packages, sign them, and upload them to PyPI.
 
-Creates a new ``WavFile`` instance, which represents a WAV audio file. Subclass of ``AudioSource``.
+Testing
+~~~~~~~
 
-If ``filename_or_fileobject`` is a string, then it is interpreted as a path to a WAV audio file (mono or stereo) on the filesystem. Otherwise, ``filename_or_fileobject`` should be a file-like object such as ``io.BytesIO`` or similar. In either case, the specified file is used as the audio source.
+To run all the tests:
 
-This class is to be used with ``with`` statements:
+.. code:: bash
 
-.. code:: python
+    python -m unittest discover --verbose
 
-    with WavFile("test.wav") as source:    # open the WAV file for reading
-        pass                               # do things here - `source` is the WavFile instance created above
+Testing is also done automatically by TravisCI, upon every push. To set up the environment for offline/local Travis-like testing on a Debian-like system:
 
-``wavfile_instance.DURATION``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code:: bash
 
-Represents the length of the audio stored in the WAV file in seconds. This property is only available when inside a context - essentially, that means it should only be accessed inside a ``with wavfile_instance ...`` statement. Outside of contexts, this property is ``None``.
+    sudo docker run --volume "$(pwd):/speech_recognition" --interactive --tty quay.io/travisci/travis-python:latest /bin/bash
+    su - travis && cd /speech_recognition
+    sudo apt-get update && sudo apt-get install swig libpulse-dev
+    pip install --user pocketsphinx monotonic && pip install --user flake8 rstcheck && pip install --user -e .
+    python -m unittest discover --verbose # run unit tests
+    python -m flake8 --ignore=E501,E701 speech_recognition tests examples setup.py # ignore errors for long lines and multi-statement lines
+    python -m rstcheck README.rst reference/*.rst # ensure RST is well-formed
 
-This is useful when combined with the ``offset`` parameter of ``recognizer_instance.record``, since when together it is possible to perform speech recognition in chunks.
+FLAC Executables
+~~~~~~~~~~~~~~~~
 
-However, note that recognizing speech in multiple chunks is not the same as recognizing the whole thing at once. If spoken words appear on the boundaries that we split the audio into chunks on, each chunk only gets part of the word, which may result in inaccurate results.
+The included ``flac-win32`` executable is the `official FLAC 1.3.2 32-bit Windows binary <http://downloads.xiph.org/releases/flac/flac-1.3.2-win.zip>`__.
 
-``Recognizer(language = "en-US", key = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw")``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The included ``flac-linux-x86`` and ``flac-linux-x86_64`` executables are built from the `FLAC 1.3.2 source code <http://downloads.xiph.org/releases/flac/flac-1.3.2.tar.xz>`__ with `Manylinux <https://github.com/pypa/manylinux>`__ to ensure that it's compatible with a wide variety of distributions.
 
-Creates a new ``Recognizer`` instance, which represents a collection of speech recognition functionality.
+The built FLAC executables should be bit-for-bit reproducible. To rebuild them, run the following inside the project directory on a Debian-like system:
 
-The language is determined by ``language``, a standard language code like `"en-US"` or `"en-GB"`, and defaults to US English. A list of supported language codes can be found `here <http://stackoverflow.com/questions/14257598/>`__. Basically, language codes can be just the language (``en``), or a language with a dialect (``en-US``).
+.. code:: bash
 
-The Google Speech Recognition API key is specified by ``key``. If not specified, it uses a generic key that works out of the box.
+    # download and extract the FLAC source code
+    cd third-party
+    sudo apt-get install --yes docker.io
 
-**WARNING: THE GENERIC KEY IS INTENDED FOR TESTING AND PERSONAL PURPOSES ONLY AND MAY BE REVOKED BY GOOGLE AT ANY TIME.**
+    # build FLAC inside the Manylinux i686 Docker image
+    tar xf flac-1.3.2.tar.xz
+    sudo docker run --tty --interactive --rm --volume "$(pwd):/root" quay.io/pypa/manylinux1_i686:latest bash
+        cd /root/flac-1.3.2
+        ./configure LDFLAGS=-static # compiler flags to make a static build
+        make
+    exit
+    cp flac-1.3.2/src/flac/flac ../speech_recognition/flac-linux-x86 && sudo rm -rf flac-1.3.2/
 
-If you need to use this module for purposes other than these, please obtain your own API key from Google. See the "Requirements" section for more information.
+    # build FLAC inside the Manylinux x86_64 Docker image
+    tar xf flac-1.3.2.tar.xz
+    sudo docker run --tty --interactive --rm --volume "$(pwd):/root" quay.io/pypa/manylinux1_x86_64:latest bash
+        cd /root/flac-1.3.2
+        ./configure LDFLAGS=-static # compiler flags to make a static build
+        make
+    exit
+    cp flac-1.3.2/src/flac/flac ../speech_recognition/flac-linux-x86_64 && sudo rm -r flac-1.3.2/
 
-``recognizer_instance.energy_threshold = 300``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Represents the energy level threshold for sounds. Values below this threshold are considered silence, and values above this threshold are considered speech. Can be changed.
-
-This is tweaked automatically if dynamic thresholds are enabled (see ``recognizer_instance.dynamic_energy_threshold``). A good starting value will generally allow automatic adjustment reach a good value faster.
-
-This threshold is associated with the perceived loudness of the sound, but it is a nonlinear relationship. The actual energy threshold you will need depends on your microphone sensitivity or audio data. Typical values for a silent room are 0 to 100, and typical values for speaking are between 150 and 3500. Ambient noise has a significant impact on what values will work best.
-
-If you're having trouble with the recognizer trying to recognize words even when you're not speaking, try tweaking this to a higher value. If you're having trouble with the recognizer not recognizing your words when you are speaking, try tweaking this to a lower value. For example, a sensitive microphone or microphones in louder rooms might have a ambient (non-speaking) energy level of up to 4000:
-
-.. code:: python
-
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    r.energy_threshold = 4000
-    # rest of your code goes here
-
-The dynamic energy threshold setting can mitigate this by increasing or decreasing this automatically to account for ambient noise. However, this takes time to adjust, so it is still possible to get the false positive detections before the threshold settles into a good value. To avoid this, set this property to a high value initially (4000 works well), so the threshold is always above ambient noise levels.
-
-``recognizer_instance.dynamic_energy_threshold = True``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Represents whether the energy level threshold (see ``recognizer_instance.energy_threshold``) for sounds should be automatically adjusted based on the currently ambient noise level while listening. Can be changed.
-
-Recommended for situations where the ambient noise level is unpredictable, which seems to be the majority of use cases. If the ambient noise level is strictly controlled, better results might be achieved by setting this to ``False`` to turn it off.
-
-``recognizer_instance.dynamic_energy_adjustment_damping = 0.15``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If the dynamic energy threshold setting is enabled (see ``recognizer_instance.dynamic_energy_threshold``), represents approximately the fraction of the current energy threshold that is retained after one second of dynamic threshold adjustment. Can be changed (not recommended).
-
-Lower values allow for faster adjustment, but also make it more likely to miss certain phrases. This value should be between 0 and 1. As this value approaches 1, dynamic adjustment has less of an effect over time. When this value is 1, dynamic adjustment does nothing.
-
-``recognizer_instance.dynamic_energy_adjustment_ratio = 1.5``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If the dynamic energy threshold setting is enabled (see ``recognizer_instance.dynamic_energy_threshold``), represents the minimum factor by which speech is louder than ambient noise. Can be changed (not recommended).
-
-For example, the default value of 1.5 means that speech is at least 1.5 times louder than ambient noise. Smaller values result in more false positives but fewer false negatives when ambient noise is loud compared to speech.
-
-``recognizer_instance.pause_threshold = 0.8``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Represents the minimum length of silence (in seconds) that will register as the end of a phrase. Can be changed.
-
-Smaller values result in the recognition completing more quickly, but might result in slower speakers being cut off.
-
-``recognizer_instance.record(source, duration = None, offset = None)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Records up to ``duration`` seconds of audio from ``source`` (an ``AudioSource`` instance) starting at ``offset`` (or at the beginning if not specified) into an ``AudioData`` instance, which it returns.
-
-If ``duration`` is not specified, then it will record until there is no more audio input.
-
-``recognizer_instance.adjust_for_ambient_noise(source, duration = 1)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Adjusts the energy threshold dynamically using audio from ``source`` (an ``AudioSource`` instance) to account for ambient noise.
-
-Intended to calibrate the energy threshold with the ambient energy level. Should be used on periods of audio without speech - will stop early if any speech is detected.
-
-The ``duration`` parameter is the maximum number of seconds that it will dynamically adjust the threshold for before returning. This value should be at least 0.5 in order to get a representative sample of the ambient noise.
-
-``recognizer_instance.listen(source, timeout = None)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Records a single phrase from ``source`` (an ``AudioSource`` instance) into an ``AudioData`` instance, which it returns.
-
-This is done by waiting until the audio has an energy above ``recognizer_instance.energy_threshold`` (the user has started speaking), and then recording until it encounters ``recognizer_instance.pause_threshold`` seconds of silence or there is no more audio input. The ending silence is not included.
-
-The ``timeout`` parameter is the maximum number of seconds that it will wait for a phrase to start before giving up and throwing an ``OSError`` exception. If ``None``, it will wait indefinitely.
-
-``recognizer_instance.listen_in_background(source, callback)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Spawns a thread to repeatedly record phrases from ``source`` (an ``AudioSource`` instance) into an ``AudioData`` instance and call ``callback`` with that ``AudioData`` instance as soon as each phrase are detected.
-
-Returns a function object that, when called, stops the background listener thread. The background thread is a daemon and will not stop the program from exiting if there are no other non-daemon threads.
-
-Phrase recognition uses the exact same mechanism as ``recognizer_instance.listen(source)``.
-
-The ``callback`` parameter is a function that should accept two parameters - the ``recognizer_instance``, and an ``AudioData`` instance representing the captured audio. Note that this function will be called from a non-main thread.
-
-``recognizer_instance.recognize(audio_data, show_all = False)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Performs speech recognition, using the Google Speech Recognition API, on ``audio_data`` (an ``AudioData`` instance).
-
-Returns the most likely transcription if ``show_all`` is ``False``, otherwise it returns a ``dict`` of all possible transcriptions and their confidence levels.
-
-Note: confidence is set to 0 if it isn't given by Google
-
-Also raises a ``LookupError`` exception if the speech is unintelligible, a ``KeyError`` if the key isn't valid or the quota for the key has been maxed out, and ``IndexError`` if there is no internet connection.
-
-Note: ``KeyError`` and ``IndexError`` is a subclass of ``LookupError`` so a ``LookupError`` will catch all three types of errors. To catch subclasses you must place their handler clause before ``LookupError``:
-
-.. code:: python
-
-    import speech_recognition as sr
-    r = sr.Recognizer()
-    with sr.WavFile("test.wav") as source:              # use "test.wav" as the audio source
-        audio = r.record(source)                        # extract audio data from the file
-
-    try:
-        print("You said " + r.recognize(audio))         # recognize speech using Google Speech Recognition
-    except IndexError:                                  # the API key didn't work
-        print("No internet connection")
-    except KeyError:                                    # the API key didn't work
-        print("Invalid API key or quota maxed out")
-    except LookupError:                                 # speech is unintelligible
-        print("Could not understand audio")
-
-``AudioSource``
-~~~~~~~~~~~~~~~
-
-Base class representing audio sources. Do not instantiate.
-
-Instances of subclasses of this class, such as ``Microphone`` and ``WavFile``, can be passed to things like ``recognizer_instance.record`` and ``recognizer_instance.listen``.
-
-``AudioData``
-~~~~~~~~~~~~~
-
-Storage class for audio data.
-
-Contains the fields ``rate`` and ``data``, which represent the framerate and raw audio samples of the audio data, respectively.
+The included ``flac-mac`` executable is extracted from `xACT 2.39 <http://xact.scottcbrown.org/>`__, which is a frontend for FLAC 1.3.2 that conveniently includes binaries for all of its encoders. Specifically, it is a copy of ``xACT 2.39/xACT.app/Contents/Resources/flac`` in ``xACT2.39.zip``.
 
 Authors
 -------
 
 ::
 
-    Uberi <azhang9@gmail.com> (Anthony Zhang)
+    Uberi <me@anthonyz.ca> (Anthony Zhang)
     bobsayshilol
     arvindch <achembarpu@gmail.com> (Arvind Chembarpu)
     kevinismith <kevin_i_smith@yahoo.com> (Kevin Smith)
     haas85
     DelightRun <changxu.mail@gmail.com>
+    maverickagm
+    kamushadenes <kamushadenes@hyadesinc.com> (Kamus Hadenes)
+    sbraden <braden.sarah@gmail.com> (Sarah Braden)
+    tb0hdan (Bohdan Turkynewych)
+    Thynix <steve@asksteved.com> (Steve Dougherty)
+    beeedy <broderick.carlin@gmail.com> (Broderick Carlin)
 
 Please report bugs and suggestions at the `issue tracker <https://github.com/Uberi/speech_recognition/issues>`__!
+
+How to cite this library (APA style):
+
+    Zhang, A. (2017). Speech Recognition (Version 3.8) [Software]. Available from https://github.com/Uberi/speech_recognition#readme.
+
+How to cite this library (Chicago style):
+
+    Zhang, Anthony. 2017. *Speech Recognition* (version 3.8).
+
+Also check out the `Python Baidu Yuyin API <https://github.com/DelightRun/PyBaiduYuyin>`__, which is based on an older version of this project, and adds support for `Baidu Yuyin <http://yuyin.baidu.com/>`__. Note that Baidu Yuyin is only available inside China.
 
 License
 -------
 
-Copyright 2014-2015 `Anthony Zhang (Uberi) <https://uberi.github.io>`__.
+Copyright 2014-2017 `Anthony Zhang (Uberi) <http://anthonyz.ca/>`__. The source code for this library is available online at `GitHub <https://github.com/Uberi/speech_recognition>`__.
 
-The source code is available online at `GitHub <https://github.com/Uberi/speech_recognition>`__.
+SpeechRecognition is made available under the 3-clause BSD license. See ``LICENSE.txt`` in the project's `root directory <https://github.com/Uberi/speech_recognition>`__ for more information.
 
-This program is made available under the 3-clause BSD license. See ``LICENSE.txt`` in the project's root directory for more information.
+For convenience, all the official distributions of SpeechRecognition already include a copy of the necessary copyright notices and licenses. In your project, you can simply **say that licensing information for SpeechRecognition can be found within the SpeechRecognition README, and make sure SpeechRecognition is visible to users if they wish to see it**.
+
+SpeechRecognition distributes source code, binaries, and language files from `CMU Sphinx <http://cmusphinx.sourceforge.net/>`__. These files are BSD-licensed and redistributable as long as copyright notices are correctly retained. See ``speech_recognition/pocketsphinx-data/*/LICENSE*.txt`` and ``third-party/LICENSE-Sphinx.txt`` for license details for individual parts.
+
+SpeechRecognition distributes source code and binaries from `PyAudio <http://people.csail.mit.edu/hubert/pyaudio/>`__. These files are MIT-licensed and redistributable as long as copyright notices are correctly retained. See ``third-party/LICENSE-PyAudio.txt`` for license details.
+
+SpeechRecognition distributes binaries from `FLAC <https://xiph.org/flac/>`__ - ``speech_recognition/flac-win32.exe``, ``speech_recognition/flac-linux-x86``, and ``speech_recognition/flac-mac``. These files are GPLv2-licensed and redistributable, as long as the terms of the GPL are satisfied. The FLAC binaries are an `aggregate <https://www.gnu.org/licenses/gpl-faq.html#MereAggregation>`__ of `separate programs <https://www.gnu.org/licenses/gpl-faq.html#NFUseGPLPlugins>`__, so these GPL restrictions do not apply to the library or your programs that use the library, only to FLAC itself. See ``LICENSE-FLAC.txt`` for license details.
